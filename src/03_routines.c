@@ -6,7 +6,7 @@
 /*   By: achoukri <achoukri@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 02:29:59 by achoukri          #+#    #+#             */
-/*   Updated: 2025/07/09 23:13:58 by achoukri         ###   ########.fr       */
+/*   Updated: 2025/07/09 23:19:22 by achoukri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,27 +62,26 @@ int	check_meal_limit_reached(t_philo *p)
 
 void	*philo_life(void *arg)
 {
-    t_philo			*p;
-    pthread_mutex_t	*first;
-    pthread_mutex_t	*second;
+	t_philo			*p;
+	pthread_mutex_t	*first;
+	pthread_mutex_t	*second;
 
-    p = (t_philo *)arg;
-    if (handle_one_philo(arg) == -1)
-        return (NULL);
-    setup_fork_order(p, &first, &second);
-        if (p->id % 2 == 0)
-        usleep(p->rules->time_to_eat * 750);  // 75% of eating time instead of 50%
-        
-    while (!check_should_stop(p))
-    {
-        philo_log(p, "is thinking");
-        usleep(1000);  // 1ms thinking time        
-        philo_pick_forks(first, second, p);
-        philo_eat_and_release_forks(p, first, second);
-        if (check_should_stop(p))
-            break;
-        philo_log(p, "is sleeping");
-        usleep(p->rules->time_to_sleep * 1000);
-    }
-    return (NULL);
+	p = (t_philo *)arg;
+	if (handle_one_philo(arg) == -1)
+		return (NULL);
+	setup_fork_order(p, &first, &second);
+	if (p->id % 2 == 0)
+		usleep(p->rules->time_to_eat * 750);
+	while (!check_should_stop(p))
+	{
+		philo_log(p, "is thinking");
+		usleep(1000);
+		philo_pick_forks(first, second, p);
+		philo_eat_and_release_forks(p, first, second);
+		if (check_should_stop(p))
+			break ;
+		philo_log(p, "is sleeping");
+		usleep(p->rules->time_to_sleep * 1000);
+	}
+	return (NULL);
 }
