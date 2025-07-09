@@ -6,7 +6,7 @@
 /*   By: achoukri <achoukri@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/14 13:42:45 by achoukri          #+#    #+#             */
-/*   Updated: 2025/07/09 22:11:03 by achoukri         ###   ########.fr       */
+/*   Updated: 2025/07/09 23:16:08 by achoukri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ void	start_simulation(t_data *rules, t_philo *philos)
 
 	spawn_philosophers(rules, philos, threads);
 	pthread_create(&monitor, NULL, monitor_routine, philos);
-	pthread_join(monitor, NULL);
+	pthread_detach(monitor);
 	i = -1;
 	while (++i < rules->number_of_philosophers)
 		pthread_join(threads[i], NULL);

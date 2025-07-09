@@ -6,7 +6,7 @@
 /*   By: achoukri <achoukri@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 21:41:06 by achoukri          #+#    #+#             */
-/*   Updated: 2025/07/09 22:01:20 by achoukri         ###   ########.fr       */
+/*   Updated: 2025/07/09 23:11:42 by achoukri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,14 +60,14 @@ int	handle_one_philo(void *arg)
 void	setup_fork_order(t_philo *p, pthread_mutex_t **first,
 				pthread_mutex_t **second)
 {
-	if (p->left_fork < p->right_fork)
-	{
-		*first = p->left_fork;
-		*second = p->right_fork;
-	}
-	else
-	{
-		*first = p->right_fork;
-		*second = p->left_fork;
-	}
+    if (p->id == p->rules->number_of_philosophers)
+    {
+        *first = p->right_fork;
+        *second = p->left_fork;
+    }
+    else
+    {
+        *first = p->left_fork;
+        *second = p->right_fork;
+    }
 }
