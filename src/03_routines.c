@@ -6,7 +6,7 @@
 /*   By: achoukri <achoukri@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 02:29:59 by achoukri          #+#    #+#             */
-/*   Updated: 2025/08/19 19:38:14 by achoukri         ###   ########.fr       */
+/*   Updated: 2025/08/19 19:53:00 by achoukri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,7 +106,7 @@ void	*monitor_routine(void *arg)
 		}
 		if (check_all_ate(philos, rules))
 			return (NULL);
-		usleep(100);
+		usleep(500);
 	}
 	return (NULL);
 }
