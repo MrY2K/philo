@@ -6,7 +6,7 @@
 /*   By: achoukri <achoukri@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 02:30:05 by achoukri          #+#    #+#             */
-/*   Updated: 2025/08/19 19:16:33 by achoukri         ###   ########.fr       */
+/*   Updated: 2025/08/19 19:44:00 by achoukri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ void	init_philos_and_forks(t_data *rules, t_philo *philos,
 	while (++i < rules->number_of_philosophers)
 	{
 		philos[i].id = i + 1;
-        philos[i].last_meal = ft_now_ms();
+		philos[i].last_meal = ft_now_ms();
 		philos[i].eat_count = 0;
 		philos[i].rules = rules;
 		philos[i].left_fork = &forks[i];
@@ -56,15 +56,15 @@ void	spawn_philosophers(t_data *rules,
 	i = 0;
 	while (i < rules->number_of_philosophers)
 	{
-		if (philos[i].id % 2 == 1)
-			pthread_create(&threads[i], NULL, philo_life, &philos[i]);
-		i++;
-	}
-	i = 0;
-	while (i < rules->number_of_philosophers)
-	{
-		if (philos[i].id % 2 == 0)
-			pthread_create(&threads[i], NULL, philo_life, &philos[i]);
+		if (pthread_create(&threads[i], NULL, philo_life, &philos[i]) != 0)
+		{
+			pthread_mutex_lock(&rules->state_lock);
+			rules->stop = 1;
+			pthread_mutex_unlock(&rules->state_lock);
+			return ;
+		}
+		if (i % 2 == 0)
+			usleep(100);
 		i++;
 	}
 }

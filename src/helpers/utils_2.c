@@ -6,7 +6,7 @@
 /*   By: achoukri <achoukri@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/25 02:22:30 by achoukri          #+#    #+#             */
-/*   Updated: 2025/07/09 22:08:58 by achoukri         ###   ########.fr       */
+/*   Updated: 2025/08/19 19:48:24 by achoukri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,6 @@ void	cleanup_resources(t_data *rules, pthread_mutex_t *forks)
 	pthread_mutex_destroy(&rules->print_lock);
 	pthread_mutex_destroy(&rules->state_lock);
 	i = -1;
-	while (++i < rules->number_of_philosophers) 
+	while (++i < rules->number_of_philosophers)
 		pthread_mutex_destroy(&forks[i]);
 }
