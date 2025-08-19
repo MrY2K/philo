@@ -6,7 +6,7 @@
 /*   By: achoukri <achoukri@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 02:30:05 by achoukri          #+#    #+#             */
-/*   Updated: 2025/07/09 22:37:01 by achoukri         ###   ########.fr       */
+/*   Updated: 2025/08/19 19:16:33 by achoukri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,19 +31,20 @@ void	init_philos_and_forks(t_data *rules, t_philo *philos,
 {
 	int	i;
 
+	rules->start_time = ft_now_ms();
+	i = -1;
+	while (++i < rules->number_of_philosophers)
+		pthread_mutex_init(&forks[i], NULL);
 	i = -1;
 	while (++i < rules->number_of_philosophers)
 	{
 		philos[i].id = i + 1;
-		philos[i].last_meal = rules->start_time;
+        philos[i].last_meal = ft_now_ms();
 		philos[i].eat_count = 0;
 		philos[i].rules = rules;
 		philos[i].left_fork = &forks[i];
 		philos[i].right_fork = &forks[(i + 1) % rules->number_of_philosophers];
 	}
-	i = -1;
-	while (++i < rules->number_of_philosophers)
-		pthread_mutex_init(&forks[i], NULL);
 }
 
 void	spawn_philosophers(t_data *rules,
@@ -52,10 +53,18 @@ void	spawn_philosophers(t_data *rules,
 {
 	int	i;
 
-	i = -1;
-	while (++i < rules->number_of_philosophers)
+	i = 0;
+	while (i < rules->number_of_philosophers)
 	{
-		usleep(100);
-		pthread_create(&threads[i], NULL, philo_life, &philos[i]);
+		if (philos[i].id % 2 == 1)
+			pthread_create(&threads[i], NULL, philo_life, &philos[i]);
+		i++;
+	}
+	i = 0;
+	while (i < rules->number_of_philosophers)
+	{
+		if (philos[i].id % 2 == 0)
+			pthread_create(&threads[i], NULL, philo_life, &philos[i]);
+		i++;
 	}
 }

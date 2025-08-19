@@ -1,18 +1,6 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: achoukri <achoukri@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/14 13:42:45 by achoukri          #+#    #+#             */
-/*   Updated: 2025/07/09 23:16:08 by achoukri         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "include/philo.h"
 
-int	validate_input(int ac, char **av)
+static int validate_input(int ac, char **av)
 {
 	if (input_parsing(ac, av) == BAD)
 		return (ft_error_msg(USAGE_ERROR_MSG), 1);
@@ -21,7 +9,8 @@ int	validate_input(int ac, char **av)
 	return (-1);
 }
 
-int	initialize_rules(int ac, char **av, t_data *rules)
+/* initialize rules struct (calls your init) */
+static int initialize_rules(int ac, char **av, t_data *rules)
 {
 	if ((init(ac, av, rules) == BAD))
 		return (1);
@@ -32,45 +21,70 @@ int	initialize_rules(int ac, char **av, t_data *rules)
 	return (0);
 }
 
-void	start_simulation(t_data *rules, t_philo *philos)
-{
-	pthread_t	threads[200];
-	pthread_t	monitor;
-	int			i;
-
-	spawn_philosophers(rules, philos, threads);
-	pthread_create(&monitor, NULL, monitor_routine, philos);
-	pthread_detach(monitor);
-	i = -1;
-	while (++i < rules->number_of_philosophers)
-		pthread_join(threads[i], NULL);
-}
-
-void	wait_for_completion(t_data *rules, pthread_t *threads,
-				pthread_t *monitor)
-{
-	int	i;
-
-	pthread_join(*monitor, NULL);
-	i = -1;
-	while (++i < rules->number_of_philosophers)
-		pthread_join(threads[i], NULL);
-}
-
 int	main(int ac, char **av)
 {
 	t_data				rules;
-	t_philo				philos[200];
-	pthread_mutex_t		forks[200];
-	int					validation_result;
+	t_philo				*philos = NULL;
+	pthread_mutex_t		*forks = NULL;
+	pthread_t			*threads = NULL;
+	pthread_t			monitor;
+	int					n;
+	int					vr;
 
-	validation_result = validate_input(ac, av);
-	if (validation_result != -1)
-		return (validation_result);
+	vr = validate_input(ac, av);
+	if (vr != -1)
+		return (vr);
 	if (initialize_rules(ac, av, &rules) != 0)
 		return (1);
+
+	n = rules.number_of_philosophers;
+
+	philos  = malloc(sizeof(t_philo) * n);
+	forks   = malloc(sizeof(pthread_mutex_t) * n);
+	threads = malloc(sizeof(pthread_t) * n);
+	if (!philos || !forks || !threads)
+	{
+		free(philos);
+		free(forks);
+		free(threads);
+		return (1);
+	}
+
+	/* set up philosopher structs and forks */
 	init_philos_and_forks(&rules, philos, forks);
-	start_simulation(&rules, philos);
-	cleanup_resources(&rules, forks);
+
+	/* spawn philosopher threads (joinable) */
+	spawn_philosophers(&rules, philos, threads);
+
+	/* start monitor (joinable) */
+	if (pthread_create(&monitor, NULL, monitor_routine, philos) != 0)
+	{
+		/* monitor creation failed: signal stop and join threads */
+		pthread_mutex_lock(&rules.state_lock);
+		rules.stop = 1;
+		pthread_mutex_unlock(&rules.state_lock);
+	}
+
+	/* wait for monitor to finish (monitor sets rules.stop) */
+	pthread_join(monitor, NULL);
+
+	/* ensure stop is set (monitor usually sets it) */
+	pthread_mutex_lock(&rules.state_lock);
+	rules.stop = 1;
+	pthread_mutex_unlock(&rules.state_lock);
+
+	/* join all philosopher threads for a clean exit */
+	for (int i = 0; i < n; ++i)
+		pthread_join(threads[i], NULL);
+
+	/* cleanup: destroy mutexes then free */
+	pthread_mutex_destroy(&rules.print_lock);
+	pthread_mutex_destroy(&rules.state_lock);
+	for (int i = 0; i < n; ++i)
+		pthread_mutex_destroy(&forks[i]);
+
+	free(threads);
+	free(philos);
+	free(forks);
 	return (0);
 }

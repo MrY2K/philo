@@ -6,84 +6,136 @@
 /*   By: achoukri <achoukri@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 02:29:59 by achoukri          #+#    #+#             */
-/*   Updated: 2025/07/09 22:45:30 by achoukri         ###   ########.fr       */
+/*   Updated: 2025/08/19 19:13:05 by achoukri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/structs.h"
 #include "include/prototypes.h"
 
-static int	check_philo_death(t_philo *philos, t_data *rules, int i)
+void    precise_sleep(t_philo *p, long duration)
 {
-	long	last;
-	long	since_last;
+    long    start;
+    long    now;
 
-	pthread_mutex_lock(&rules->state_lock);
-	last = philos[i].last_meal;
-	pthread_mutex_unlock(&rules->state_lock);
-	since_last = ft_now_ms() - last;
-	if (since_last >= rules->time_to_die)
-	{
-		philo_log(&philos[i], "died");
-		pthread_mutex_lock(&rules->state_lock);
-		rules->stop = 1;
-		pthread_mutex_unlock(&rules->state_lock);
-		return (1);
-	}
-	return (0);
+    start = ft_now_ms();
+    while (!should_stop(p))
+    {
+        now = ft_now_ms();
+        if (now - start >= duration)
+            break;
+        usleep(100);  // Sleep in smaller increments for more precision
+    }
 }
 
-static int	check_philo_eaten(t_philo *philos, t_data *rules, int i)
+void	lock(pthread_mutex_t *mutex)
 {
-	int	eaten;
-
-	if (rules->number_of_times_each_p_must_eat > 0)
-	{
-		pthread_mutex_lock(&rules->state_lock);
-		eaten = philos[i].eat_count;
-		pthread_mutex_unlock(&rules->state_lock);
-		if (eaten >= rules->number_of_times_each_p_must_eat)
-			return (1);
-	}
-	return (0);
+	pthread_mutex_lock(mutex);
 }
 
-static int	check_all_eaten(t_data *rules, int full_count)
+void	unlock(pthread_mutex_t *mutex)
 {
-	if (rules->number_of_times_each_p_must_eat > 0
-		&& full_count == rules->number_of_philosophers)
-	{
-		pthread_mutex_lock(&rules->state_lock);
-		rules->stop = 1;
-		pthread_mutex_unlock(&rules->state_lock);
-		return (1);
-	}
-	return (0);
+	pthread_mutex_unlock(mutex);
 }
 
-void	*monitor_routine(void *arg)
+int	should_stop(t_philo *p)
 {
-	t_philo	*philos;
-	t_data	*rules;
-	int		full_count;
-	int		i;
+	int	stop;
 
-	philos = (t_philo *)arg;
-	rules = philos[0].rules;
-	while (1)
-	{
-		full_count = 0;
-		i = -1;
-		while (++i < rules->number_of_philosophers)
-		{
-			if (check_philo_death(philos, rules, i))
-				return (NULL);
-			if (check_philo_eaten(philos, rules, i))
-				full_count++;
-		}
-		if (check_all_eaten(rules, full_count))
-			return (NULL);
-		usleep(100);
-	}
-	return (NULL);
+	pthread_mutex_lock(&p->rules->state_lock);
+	
+	stop = p->rules->stop;
+	pthread_mutex_unlock(&p->rules->state_lock);
+	return (stop);
+}
+void    take_forks(t_philo *p)
+{
+    pthread_mutex_t *first_fork;
+    pthread_mutex_t *second_fork;
+
+    if (should_stop(p))
+        return;
+    
+    // Always take the lower-numbered fork first
+    if (p->id % 2 == 0)
+    {
+        first_fork = p->right_fork;
+        second_fork = p->left_fork;
+    }
+    else
+    {
+        first_fork = p->left_fork;
+        second_fork = p->right_fork;
+    }
+    
+    lock(first_fork);
+    philo_log(p, "has taken a fork");
+    lock(second_fork);
+    philo_log(p, "has taken a fork");
+    
+    lock(&p->rules->state_lock);
+    p->last_meal = ft_now_ms();
+    unlock(&p->rules->state_lock);
+}
+
+void    drop_forks(t_philo *p)
+{
+    pthread_mutex_t *first_fork;
+    pthread_mutex_t *second_fork;
+
+    if (p->id % 2 == 0)
+    {
+        first_fork = p->right_fork;
+        second_fork = p->left_fork;
+    }
+    else
+    {
+        first_fork = p->left_fork;
+        second_fork = p->right_fork;
+    }
+    
+    unlock(second_fork);
+    unlock(first_fork);
+}
+
+void	philo_eat(t_philo *p)
+{
+    if (should_stop(p))
+        return ;
+    lock(&p->rules->state_lock);
+    p->last_meal = ft_now_ms();
+    p->eat_count++;
+    unlock(&p->rules->state_lock);
+    philo_log(p, "is eating");
+    precise_sleep(p, p->rules->time_to_eat);
+}
+
+void	philo_sleep(t_philo *p)
+{
+    if (should_stop(p))
+        return ;
+    philo_log(p, "is sleeping");
+    precise_sleep(p, p->rules->time_to_sleep);
+}
+
+void	philo_think(t_philo *p)
+{
+    if (should_stop(p))
+        return ;
+    philo_log(p, "is thinking");
+}
+
+void    philo_log(t_philo *p, const char *msg)
+{
+    long    timestamp;
+
+    lock(&p->rules->state_lock);
+    if (!p->rules->stop)  // Check stop flag while holding the lock
+    {
+        timestamp = ft_now_ms() - p->rules->start_time;
+        lock(&p->rules->print_lock);
+        printf("%ld %d %s\n", timestamp, p->id, msg);
+        unlock(&p->rules->print_lock);
+    }
+    unlock(&p->rules->state_lock);
 }

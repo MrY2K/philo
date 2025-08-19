@@ -6,82 +6,140 @@
 /*   By: achoukri <achoukri@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 02:29:59 by achoukri          #+#    #+#             */
-/*   Updated: 2025/07/09 23:19:22 by achoukri         ###   ########.fr       */
+/*   Updated: 2025/08/19 19:17:56 by achoukri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "include/structs.h"
-#include "include/prototypes.h"
+#include "include/philo.h"
 
-int	check_should_stop(t_philo *p)
+void    handle_one_philo(t_philo *p)
 {
-	int	should_stop;
-
-	pthread_mutex_lock(&p->rules->state_lock);
-	should_stop = p->rules->stop;
-	pthread_mutex_unlock(&p->rules->state_lock);
-	return (should_stop);
+    philo_log(p, "is thinking");
+    lock(p->left_fork);
+    philo_log(p, "has taken a fork");
+    precise_sleep(p, p->rules->time_to_die);
+    philo_log(p, "died");  // Print death message first
+    lock(&p->rules->state_lock);
+    p->rules->stop = 1;    // Then set stop flag
+    unlock(&p->rules->state_lock);
+    unlock(p->left_fork);
 }
 
-void	philo_pick_forks(pthread_mutex_t *first,
-				pthread_mutex_t *second, t_philo *p)
+int    check_death(t_philo *philos, t_data *rules, int i)
 {
-	pthread_mutex_lock(first);
-	philo_log(p, "has taken a fork");
-	pthread_mutex_lock(second);
-	philo_log(p, "has taken a fork");
+    long    last;
+    long    now;
+    int     is_dead;
+
+    lock(&rules->state_lock);
+    if (rules->stop)
+    {
+        unlock(&rules->state_lock);
+        return (0);
+    }
+    last = philos[i].last_meal;
+    now = ft_now_ms();
+    is_dead = (now - last > rules->time_to_die);
+    if (is_dead)
+    {
+        rules->stop = 1;
+        unlock(&rules->state_lock);
+        lock(&rules->print_lock);
+        printf("%ld %d died\n", now - rules->start_time, philos[i].id);
+        unlock(&rules->print_lock);
+        return (1);
+    }
+    unlock(&rules->state_lock);
+    return (0);
 }
 
-void	philo_eat_and_release_forks(t_philo *p, pthread_mutex_t *first,
-		pthread_mutex_t *second)
+int    check_all_ate(t_philo *philos, t_data *rules)
 {
-	pthread_mutex_lock(&p->rules->state_lock);
-	p->last_meal = ft_now_ms();
-	p->eat_count++;
-	pthread_mutex_unlock(&p->rules->state_lock);
-	philo_log(p, "is eating");
-	usleep(p->rules->time_to_eat * 1000);
-	pthread_mutex_unlock(second);
-	pthread_mutex_unlock(first);
+    int    full_count;
+    int    i;
+
+    if (rules->number_of_times_each_p_must_eat <= 0)
+        return (0);
+    lock(&rules->state_lock);
+    if (rules->stop)
+    {
+        unlock(&rules->state_lock);
+        return (0);
+    }
+    full_count = 0;
+    i = -1;
+    while (++i < rules->number_of_philosophers)
+    {
+        if (philos[i].eat_count >= rules->number_of_times_each_p_must_eat)
+            full_count++;
+    }
+    if (full_count == rules->number_of_philosophers)
+    {
+        rules->stop = 1;
+        unlock(&rules->state_lock);
+        return (1);
+    }
+    return (unlock(&rules->state_lock), 0);
 }
 
-int	check_meal_limit_reached(t_philo *p)
+void	*monitor_routine(void *arg)
 {
-	int	current_eat_count;
+    t_philo	*philos;
+    t_data	*rules;
+    int		i;
+    int		should_continue;
 
-	if (p->rules->number_of_times_each_p_must_eat > 0)
-	{
-		pthread_mutex_lock(&p->rules->state_lock);
-		current_eat_count = p->eat_count;
-		pthread_mutex_unlock(&p->rules->state_lock);
-		if (current_eat_count >= p->rules->number_of_times_each_p_must_eat)
-			return (1);
-	}
-	return (0);
+    philos = (t_philo *)arg;
+    rules = philos[0].rules;
+    while (1)
+    {
+        pthread_mutex_lock(&rules->state_lock);
+        should_continue = !rules->stop;
+        pthread_mutex_unlock(&rules->state_lock);
+        if (!should_continue)
+            break;
+        i = -1;
+        while (++i < rules->number_of_philosophers)
+        {
+            if (check_death(philos, rules, i))
+                return (NULL);
+        }
+        if (check_all_ate(philos, rules))
+            return (NULL);
+        usleep(100);
+    }
+    return (NULL);
 }
 
-void	*philo_life(void *arg)
+void	*philo_life(void *param)
 {
-	t_philo			*p;
-	pthread_mutex_t	*first;
-	pthread_mutex_t	*second;
+    t_philo	*p;
 
-	p = (t_philo *)arg;
-	if (handle_one_philo(arg) == -1)
-		return (NULL);
-	setup_fork_order(p, &first, &second);
-	if (p->id % 2 == 0)
-		usleep(p->rules->time_to_eat * 750);
-	while (!check_should_stop(p))
-	{
-		philo_log(p, "is thinking");
-		usleep(1000);
-		philo_pick_forks(first, second, p);
-		philo_eat_and_release_forks(p, first, second);
-		if (check_should_stop(p))
-			break ;
-		philo_log(p, "is sleeping");
-		usleep(p->rules->time_to_sleep * 1000);
-	}
-	return (NULL);
+    p = (t_philo *)param;
+    lock(&p->rules->state_lock);
+    p->last_meal = ft_now_ms();  // Set initial meal time
+    unlock(&p->rules->state_lock);
+
+	if (p->rules->number_of_philosophers == 1)
+    {
+        handle_one_philo(p);
+        return (NULL);
+    }
+    if (p->id % 2 == 0)          // Stagger even philosophers
+        philo_sleep(p);          // Use sleep instead of usleep for consistency
+
+    while (!should_stop(p))      // Better than while(1337) with break
+    {
+        philo_think(p);
+        take_forks(p);
+        if (should_stop(p))      // Check if we should stop before eating
+        {
+            drop_forks(p);
+            break ;
+        }
+        philo_eat(p);
+        drop_forks(p);
+        philo_sleep(p);
+    }
+    return (NULL);
 }

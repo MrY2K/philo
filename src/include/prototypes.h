@@ -6,7 +6,7 @@
 /*   By: achoukri <achoukri@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 02:27:42 by achoukri          #+#    #+#             */
-/*   Updated: 2025/07/09 22:11:08 by achoukri         ###   ########.fr       */
+/*   Updated: 2025/08/19 18:46:29 by achoukri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,6 @@ void	*philo_life(void *arg);
 void	*monitor_routine(void *arg);
 void	philo_log(t_philo *p, const char *msg);
 
-int		handle_one_philo(void *arg);
 void	philo_pick_forks(pthread_mutex_t *first,
 			pthread_mutex_t *second, t_philo *p);
 int		check_meal_limit_reached(t_philo *p);
@@ -52,8 +51,8 @@ void	setup_fork_order(t_philo *p, pthread_mutex_t **first,
 void	cleanup_resources(t_data *rules, pthread_mutex_t *forks);
 void	wait_for_completion(t_data *rules, pthread_t *threads,
 			pthread_t *monitor);
-void	start_simulation(t_data *rules, t_philo *philos);
-int		validate_input(int ac, char **av);
-int		initialize_rules(int ac, char **av, t_data *rules);
+void	start_simulation(t_data *rules, t_philo *philos, pthread_t *threads);
+// int		validate_input(int ac, char **av);
+// int		initialize_rules(int ac, char **av, t_data *rules);
 
 #endif
