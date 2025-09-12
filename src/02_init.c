@@ -6,7 +6,7 @@
 /*   By: achoukri <achoukri@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 02:30:05 by achoukri          #+#    #+#             */
-/*   Updated: 2025/08/19 19:44:00 by achoukri         ###   ########.fr       */
+/*   Updated: 2025/09/12 17:52:12 by achoukri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@
 int	init(int ac, char **av, t_data *rules)
 {
 	rules->number_of_philosophers = ft_atoi_improved(av[1], NULL);
+	if (rules->number_of_philosophers > 200)
+		return (BAD);
 	rules->time_to_die = ft_atoi_improved(av[2], NULL);
 	rules->time_to_eat = ft_atoi_improved(av[3], NULL);
 	rules->time_to_sleep = ft_atoi_improved(av[4], NULL);

@@ -6,7 +6,7 @@
 /*   By: achoukri <achoukri@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/19 19:36:21 by achoukri          #+#    #+#             */
-/*   Updated: 2025/08/19 19:43:47 by achoukri         ###   ########.fr       */
+/*   Updated: 2025/09/12 17:51:42 by achoukri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ static int	initialize_simulation(int ac, char **av, t_data *rules)
 	else if (validate_result == -1)
 		return (0);
 	if ((init(ac, av, rules) == BAD))
-		return (1);
+		return (ft_error_msg(USAGE_ERROR_MSG), 1);
 	pthread_mutex_init(&rules->print_lock, NULL);
 	pthread_mutex_init(&rules->state_lock, NULL);
 	rules->start_time = ft_now_ms();
