@@ -6,7 +6,7 @@
 /*   By: achoukri <achoukri@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 02:29:59 by achoukri          #+#    #+#             */
-/*   Updated: 2025/08/19 19:53:00 by achoukri         ###   ########.fr       */
+/*   Updated: 2025/09/14 17:50:31 by achoukri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,15 +14,14 @@
 
 void	handle_one_philo(t_philo *p)
 {
-	philo_log(p, "is thinking");
-	lock(p->left_fork);
-	philo_log(p, "has taken a fork");
-	precise_sleep(p, p->rules->time_to_die);
-	philo_log(p, "died");
-	lock(&p->rules->state_lock);
-	p->rules->stop = 1;
-	unlock(&p->rules->state_lock);
-	unlock(p->left_fork);
+	if (p->rules->number_of_philosophers == 1)
+	{
+		philo_log(p, "is thinking");
+		philo_log(p, "has taken a fork");
+		precise_sleep(p, p->rules->time_to_die);
+		philo_log(p, "died");
+		return ;
+	}
 }
 
 int	check_death(t_philo *philos, t_data *rules, int i)

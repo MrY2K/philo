@@ -46,7 +46,7 @@ DEPS         = $(OBJS:.o=.d)
 CC           = cc
 # CFLAGS       = -Wall -Wextra -Werror # -Ofast -fsanitize=address -Wunreachable-code -fsanitize=thread
 
-CFLAGS       = -Wall -Wextra -Werror -Wunreachable-code -pthread -g -fsanitize=thread
+CFLAGS       = -Wall -Wextra -Werror #-Wunreachable-code -pthread -g -fsanitize=thread
 # CFLAGS       = -Wall -Wextra -Werror -Wunreachable-code -pthread 
 # CFLAGS       = -Wall -Wextra -Werror -Wunreachable-code -pthread -g -fsanitize=address
 

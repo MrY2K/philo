@@ -6,7 +6,7 @@
 /*   By: achoukri <achoukri@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/19 19:36:21 by achoukri          #+#    #+#             */
-/*   Updated: 2025/09/12 17:51:42 by achoukri         ###   ########.fr       */
+/*   Updated: 2025/09/14 17:55:12 by achoukri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,6 +77,7 @@ int	main(int ac, char **av)
 		cleanup_simulation(&rules, philos, forks, threads);
 		return (1);
 	}
+	handle_one_philo(philos);
 	spawn_philosophers(&rules, philos, threads + 1);
 	pthread_join(threads[0], NULL);
 	cleanup_simulation(&rules, philos, forks, threads);
@@ -88,6 +89,8 @@ static void	cleanup_simulation(t_data *rules, t_philo *philos,
 {
 	int	i;
 
+	if (rules->number_of_philosophers == 1)
+		return ;
 	pthread_mutex_lock(&rules->state_lock);
 	rules->stop = 1;
 	pthread_mutex_unlock(&rules->state_lock);

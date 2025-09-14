@@ -6,7 +6,7 @@
 /*   By: achoukri <achoukri@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 21:41:06 by achoukri          #+#    #+#             */
-/*   Updated: 2025/08/19 19:46:26 by achoukri         ###   ########.fr       */
+/*   Updated: 2025/09/14 17:29:19 by achoukri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,21 +15,8 @@
 
 void	drop_forks(t_philo *p)
 {
-	pthread_mutex_t	*first_fork;
-	pthread_mutex_t	*second_fork;
-
-	if (p->id % 2 == 0)
-	{
-		first_fork = p->right_fork;
-		second_fork = p->left_fork;
-	}
-	else
-	{
-		first_fork = p->left_fork;
-		second_fork = p->right_fork;
-	}
-	unlock(second_fork);
-	unlock(first_fork);
+	unlock(p->first_fork);
+	unlock(p->second_fork);
 }
 
 void	philo_eat(t_philo *p)

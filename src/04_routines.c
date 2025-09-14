@@ -6,7 +6,7 @@
 /*   By: achoukri <achoukri@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 02:29:59 by achoukri          #+#    #+#             */
-/*   Updated: 2025/08/19 19:53:54 by achoukri         ###   ########.fr       */
+/*   Updated: 2025/09/14 18:10:16 by achoukri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,24 +50,11 @@ int	should_stop(t_philo *p)
 
 void	take_forks(t_philo *p)
 {
-	pthread_mutex_t	*first_fork;
-	pthread_mutex_t	*second_fork;
-
 	if (should_stop(p))
 		return ;
-	if (p->id % 2 == 0)
-	{
-		first_fork = p->right_fork;
-		second_fork = p->left_fork;
-	}
-	else
-	{
-		first_fork = p->left_fork;
-		second_fork = p->right_fork;
-	}
-	lock(first_fork);
+	lock(p->second_fork);
 	philo_log(p, "has taken a fork");
-	lock(second_fork);
+	lock(p->first_fork);
 	philo_log(p, "has taken a fork");
 	lock(&p->rules->state_lock);
 	p->last_meal = ft_now_ms();

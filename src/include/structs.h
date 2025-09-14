@@ -6,7 +6,7 @@
 /*   By: achoukri <achoukri@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 02:27:44 by achoukri          #+#    #+#             */
-/*   Updated: 2025/08/19 19:48:07 by achoukri         ###   ########.fr       */
+/*   Updated: 2025/09/14 17:27:09 by achoukri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,8 @@ typedef struct s_philo
 	int				eat_count;
 	pthread_mutex_t	*left_fork;
 	pthread_mutex_t	*right_fork;
+	pthread_mutex_t	*first_fork;
+	pthread_mutex_t	*second_fork;
 	t_data			*rules;
 }	t_philo;
 

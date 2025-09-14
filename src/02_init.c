@@ -6,7 +6,7 @@
 /*   By: achoukri <achoukri@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 02:30:05 by achoukri          #+#    #+#             */
-/*   Updated: 2025/09/12 17:52:12 by achoukri         ###   ########.fr       */
+/*   Updated: 2025/09/14 17:54:41 by achoukri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,8 +44,11 @@ void	init_philos_and_forks(t_data *rules, t_philo *philos,
 		philos[i].last_meal = ft_now_ms();
 		philos[i].eat_count = 0;
 		philos[i].rules = rules;
-		philos[i].left_fork = &forks[i];
-		philos[i].right_fork = &forks[(i + 1) % rules->number_of_philosophers];
+		philos[i].first_fork = &forks[i];
+		if (i == rules->number_of_philosophers - 1)
+			philos[i].second_fork = &forks[0];
+		else
+			philos[i].second_fork = &forks[i + 1];
 	}
 }
 
@@ -55,6 +58,8 @@ void	spawn_philosophers(t_data *rules,
 {
 	int	i;
 
+	if (rules->number_of_philosophers == 1)
+		return ;
 	i = 0;
 	while (i < rules->number_of_philosophers)
 	{
@@ -65,8 +70,6 @@ void	spawn_philosophers(t_data *rules,
 			pthread_mutex_unlock(&rules->state_lock);
 			return ;
 		}
-		if (i % 2 == 0)
-			usleep(100);
 		i++;
 	}
 }
