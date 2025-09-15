@@ -6,11 +6,12 @@
 /*   By: achoukri <achoukri@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 02:29:59 by achoukri          #+#    #+#             */
-/*   Updated: 2025/09/14 17:50:31 by achoukri         ###   ########.fr       */
+/*   Updated: 2025/09/15 14:52:44 by achoukri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "include/philo.h"
+#include "./include/structs.h"
+#include "./include/prototypes.h"
 
 void	handle_one_philo(t_philo *p)
 {
@@ -19,7 +20,6 @@ void	handle_one_philo(t_philo *p)
 		philo_log(p, "is thinking");
 		philo_log(p, "has taken a fork");
 		precise_sleep(p, p->rules->time_to_die);
-		philo_log(p, "died");
 		return ;
 	}
 }

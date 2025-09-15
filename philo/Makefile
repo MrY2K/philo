@@ -26,8 +26,8 @@ SRCS         = $(SRC_DIR)/main.c \
 				$(SRC_DIR)/01_input_managment.c \
 				$(SRC_DIR)/02_init.c \
 				$(SRC_DIR)/03_routines.c \
-				$(SRC_DIR)/04_routines.c \
-				$(SRC_DIR)/05_routines.c
+				$(SRC_DIR)/04_routines_helpers.c \
+				$(SRC_DIR)/05_routines_helpers_2.c
 
 HEADER		 = $(INCLUDE_DIR)/philo.h \
 				$(INCLUDE_DIR)/includes.h \
@@ -44,12 +44,8 @@ DEPS         = $(OBJS:.o=.d)
 ################################################
 
 CC           = cc
-# CFLAGS       = -Wall -Wextra -Werror # -Ofast -fsanitize=address -Wunreachable-code -fsanitize=thread
 
-CFLAGS       = -Wall -Wextra -Werror #-Wunreachable-code -pthread -g -fsanitize=thread
-# CFLAGS       = -Wall -Wextra -Werror -Wunreachable-code -pthread 
-# CFLAGS       = -Wall -Wextra -Werror -Wunreachable-code -pthread -g -fsanitize=address
-
+CFLAGS       = -Wall -Wextra -Werror 
 
 ################################################
 #                   RULES                      #
