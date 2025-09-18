@@ -105,7 +105,7 @@ void	*monitor_routine(void *arg)
 		}
 		if (check_all_ate(philos, rules))
 			return (NULL);
-		usleep(500);
+		usleep(50);
 	}
 	return (NULL);
 }
